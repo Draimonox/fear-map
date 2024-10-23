@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button, Center, Loader } from "@mantine/core";
+import { Button, Card, Center, Loader, ScrollArea, Text } from "@mantine/core";
 import OpenAI from "openai";
 
 function Page() {
@@ -9,6 +9,7 @@ function Page() {
   // Access the OpenAI API key from environment variables
   const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+    dangerouslyAllowBrowser: true,
   });
 
   useEffect(() => {
@@ -27,7 +28,7 @@ function Page() {
   }
 
   async function getCityFromCoordinates(latitude: number, longitude: number) {
-    const apiKeyOpenCage = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
+    const apiKeyOpenCage = process.env.NEXT_PUBLIC_CAGE_API_KEY;
     const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKeyOpenCage}`;
 
     try {
@@ -36,7 +37,7 @@ function Page() {
       if (data.results && data.results.length > 0) {
         const city = data.results[0].components.city;
         setCity(city);
-        console.log(`City: ${city}`);
+        // console.log(`City: ${city}`);
         await chatgpt(city);
       } else {
         console.error("No results found.");
@@ -68,13 +69,33 @@ function Page() {
   };
   return (
     <>
-      <h1>
-        {story || (
-          <Center>
-            <Loader color="red" type="bars" />
-          </Center>
-        )}
-      </h1>
+      <Center>
+        <Text size="xl" fw={700} style={{ padding: "20px" }}>
+          Real scary story from {city}
+        </Text>
+      </Center>
+      <ScrollArea
+        h="80vh"
+        w="90vw"
+        style={{
+          margin: "auto",
+          // marginTop: "vh",
+          borderColor: "gray",
+          borderWidth: "2px",
+          borderStyle: "solid",
+          borderRadius: "15px",
+          boxShadow: "10px 10px 5px black",
+          padding: "25px",
+        }}
+      >
+        <h1 style={{ height: "100%", lineHeight: "2" }}>
+          {story || (
+            <Center h="50vh" style={{ backgroundColor: "yellow" }}>
+              <Loader type="bars" />
+            </Center>
+          )}
+        </h1>
+      </ScrollArea>
     </>
   );
 }
