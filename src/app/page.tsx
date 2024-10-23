@@ -1,16 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button } from "@mantine/core";
+import { Button, Center, Loader } from "@mantine/core";
 import OpenAI from "openai";
 
 function Page() {
+  const [city, setCity] = useState<string | null>(null);
+  const [story, setStory] = useState<string | null>(null);
   // Access the OpenAI API key from environment variables
   const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true,
   });
-
-  const [city, setCity] = useState<string | null>(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -28,8 +27,8 @@ function Page() {
   }
 
   async function getCityFromCoordinates(latitude: number, longitude: number) {
-    const apiKey = "6ccc0e9185a44014bd7d15c6920215b9";
-    const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKey}`;
+    const apiKeyOpenCage = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY;
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${apiKeyOpenCage}`;
 
     try {
       const response = await fetch(url);
@@ -63,11 +62,19 @@ function Page() {
       ],
     });
     console.log(completion.choices[0].message.content);
+    const story = completion.choices[0].message.content;
+    setStory(story);
+    return story;
   };
-
   return (
     <>
-      <h1>Message goes here</h1>
+      <h1>
+        {story || (
+          <Center>
+            <Loader color="red" type="bars" />
+          </Center>
+        )}
+      </h1>
     </>
   );
 }
