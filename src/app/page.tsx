@@ -85,7 +85,7 @@ function Page() {
           borderStyle: "solid",
           borderRadius: "15px",
           boxShadow: "10px 10px 5px black",
-          padding: "25px",
+          padding: "30px",
         }}
       >
         <h1 style={{ height: "100%", lineHeight: "2" }}>
