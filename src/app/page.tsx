@@ -1,16 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button, Card, Center, Loader, ScrollArea, Text } from "@mantine/core";
-import OpenAI from "openai";
+import { Center, Loader, ScrollArea, Text } from "@mantine/core";
 
 function Page() {
   const [city, setCity] = useState<string | null>(null);
   const [story, setStory] = useState<string | null>(null);
   // Access the OpenAI API key from environment variables
-  const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-    dangerouslyAllowBrowser: true,
-  });
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -18,7 +13,8 @@ function Page() {
     } else {
       console.error("Geolocation is not supported by this browser.");
     }
-  }, []); // Empty dependency array to run only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function success(position: GeolocationPosition) {
     const latitude = position.coords.latitude;
@@ -38,7 +34,7 @@ function Page() {
         const city = data.results[0].components.city;
         setCity(city);
         // console.log(`City: ${city}`);
-        await chatgpt(city);
+        await storyMaker(city);
       } else {
         console.error("No results found.");
       }
@@ -51,22 +47,23 @@ function Page() {
     console.error("Unable to retrieve your location.");
   }
 
-  const chatgpt = async (city: string) => {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: "You are a helpful assistant." },
-        {
-          role: "user",
-          content: `Write a scary story that occurred in ${city}.`,
+  async function storyMaker(city: string) {
+    try {
+      const res = await fetch("./api/calls", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ],
-    });
-    console.log(completion.choices[0].message.content);
-    const story = completion.choices[0].message.content;
-    setStory(story);
-    return story;
-  };
+        body: JSON.stringify({ city }),
+      });
+      const data = await res.json();
+      console.log(data);
+      setStory(data);
+    } catch (error) {
+      console.error("Error fetching data from OpenAI API:", error);
+    }
+  }
+
   return (
     <>
       <Center>
@@ -90,7 +87,7 @@ function Page() {
       >
         <h1 style={{ height: "100%", lineHeight: "2" }}>
           {story || (
-            <Center h="50vh" style={{ backgroundColor: "yellow" }}>
+            <Center h="50vh" style={{}}>
               <Loader type="bars" />
             </Center>
           )}
